@@ -1,207 +1,164 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<title>Geometry Dash Clone</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#0f172a;
-    color:white;
-    font-family:sans-serif;
-    overflow:hidden;
-  }
-  canvas {
-    display:block;
-    background:linear-gradient(#1e293b,#0f172a);
-  }
+  <meta charset="UTF-8" />
+  <title>Camera Grid - Skiien</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* UI */
-  #menu {
-    position:fixed;
-    top:0;left:0;right:0;bottom:0;
-    background:rgba(0,0,0,0.65);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-  }
-  h1 { font-size:38px; margin-bottom:20px; }
-  button {
-    padding:10px 22px;
-    font-size:18px;
-    border:none;
-    border-radius:8px;
-    margin:8px;
-    cursor:pointer;
-    font-weight:bold;
-    background:#38bdf8;
-    color:#0f172a;
-    transition:0.15s;
-  }
-  button:hover { background:#0ea5e9; }
-</style>
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    nav {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .menu-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: #1e293b;
+      color: #e5e7eb;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .menu-btn:hover {
+      background: #111827;
+      border-color: rgba(148, 163, 184, 0.6);
+    }
+
+    .menu-btn.active {
+      background: #22c55e;
+      color: #022c22;
+      border-color: #22c55e;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      min-height: 0; /* important for flex layouts */
+    }
+
+    .grid-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 2px;
+      background: #020617;
+    }
+
+    .cam-cell {
+      position: relative;
+      background: #020617;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* optie: responsief bij smalle schermen (1 kolom) */
+    @media (max-width: 768px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <div class="logo">Camera Grid</div>
+    <nav>
+      <!-- Nu alleen Skiien, later kun je hier meer knoppen toevoegen -->
+      <button class="menu-btn active" data-section="skiien">Skiien</button>
+    </nav>
+  </header>
 
-<div id="menu">
-  <h1>Geometry Dash Clone</h1>
-  <button onclick="startLevel(1)">Level 1</button>
-  <button onclick="startLevel(2)">Level 2</button>
-  <button onclick="startLevel(3)">Level 3</button>
-</div>
+  <main>
+    <!-- Sectie: Skiien -->
+    <section id="skiien" class="grid-container">
+      <div class="cam-cell">
+        <iframe
+          src="https://www.feratel.com/en/webcams/austria/tyrol/finkenberg-penkenjoch"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div class="cam-cell">
+        <iframe
+          src="https://www.feratel.com/nl/webcams/oostenrijk/tirol/mayrhofen-penkenbahn"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div class="cam-cell">
+        <iframe
+          src="https://www.feratel.com/en/webcams/austria/tyrol/hintertux-gefrorene-wand"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div class="cam-cell">
+        <iframe
+          src="https://www.feratel.com/en/webcams/austria/tyrol/hintertux-gefrorene-wand"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </section>
+  </main>
 
-<canvas id="game" width="900" height="450"></canvas>
+  <script>
+    // Klaar voor meerdere menu-items / sections in de toekomst.
+    const buttons = document.querySelectorAll(".menu-btn");
+    const sections = document.querySelectorAll("main > section");
 
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
 
-let player = {
-  x: 80,
-  y: 350,
-  size: 28,
-  dy: 0,
-  jump: -13,
-  gravity: 0.6,
-  grounded: false
-};
-
-let obstacles = [];  
-let gameSpeed = 2;
-let playing = false;
-let currentLevel = 1;
-
-function resetPlayer() {
-  player.x = 80;
-  player.y = 350;
-  player.dy = 0;
-}
-
-function startLevel(lv) {
-  currentLevel = lv;
-  obstacles = createLevel(lv);
-  resetPlayer();
-  playing = true;
-  document.getElementById("menu").style.display = "none";
-}
-
-// --- LEVEL DESIGN ---
-function createLevel(level) {
-  let obs = [];
-
-  if (level === 1) {
-    obs.push({x:300, y:375, w:30, h:30});
-    obs.push({x:500, y:375, w:30, h:30});
-    obs.push({x:700, y:375, w:30, h:30});
-    obs.push({x:900, y:375, w:40, h:40});
-  }
-
-  if (level === 2) {
-    obs.push({x:250, y:375, w:35, h:35});
-    obs.push({x:450, y:375, w:50, h:50});
-    obs.push({x:750, y:375, w:35, h:35});
-    obs.push({x:950, y:375, w:40, h:40});
-    obs.push({x:1200, y:375, w:50, h:50});
-  }
-
-  if (level === 3) {
-    obs.push({x:260, y:375, w:35, h:35});
-    obs.push({x:380, y:360, w:35, h:50});
-    obs.push({x:560, y:375, w:35, h:35});
-    obs.push({x:700, y:350, w:35, h:60});
-    obs.push({x:950, y:375, w:40, h:40});
-    obs.push({x:1200, y:375, w:50, h:50});
-    obs.push({x:1500, y:350, w:50, h:60});
-  }
-
-  return obs;
-}
-
-// --- CONTROLS ---
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
-    if (player.grounded) {
-      player.dy = player.jump;
-      player.grounded = false;
-    }
-  }
-});
-
-// --- PHYSICS + COLLISION ---
-function update() {
-  if (!playing) return;
-
-  player.dy += player.gravity;
-  player.y += player.dy;
-
-  if (player.y + player.size > 400) {
-    player.y = 400 - player.size;
-    player.grounded = true;
-  }
-
-  // Move obstacles
-  for (let obs of obstacles) {
-    obs.x -= gameSpeed;
-
-    // collision
-    if (
-      player.x < obs.x + obs.w &&
-      player.x + player.size > obs.x &&
-      player.y < obs.y + obs.h &&
-      player.y + player.size > obs.y
-    ) {
-      die();
-    }
-  }
-
-  // win condition: last obstacle passed
-  if (obstacles.length > 0) {
-    let last = obstacles[obstacles.length - 1];
-    if (last.x + last.w < 0) win();
-  }
-}
-
-// --- LOSE ---
-function die() {
-  playing = false;
-  document.getElementById("menu").style.display = "flex";
-}
-
-// --- WIN ---
-function win() {
-  playing = false;
-  alert("Level "+currentLevel+" gehaald! 🎉");
-  document.getElementById("menu").style.display = "flex";
-}
-
-// --- DRAWING ---
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // ground
-  ctx.fillStyle = "#334155";
-  ctx.fillRect(0, 400, canvas.width, 50);
-
-  // player
-  ctx.fillStyle = "#38bdf8";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-
-  // obstacles
-  ctx.fillStyle = "#ef4444";
-  for (let obs of obstacles) {
-    ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-  }
-}
-
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-
+        const target = btn.dataset.section;
+        sections.forEach(sec => {
+          sec.style.display = (sec.id === target) ? "grid" : "none";
+        });
+      });
+    });
+  </script>
 </body>
 </html>
