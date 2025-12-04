@@ -68,7 +68,7 @@ let player = {
 };
 
 let obstacles = [];  
-let gameSpeed = 6;
+let gameSpeed = 2;
 let playing = false;
 let currentLevel = 1;
 
